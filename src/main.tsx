@@ -7,6 +7,8 @@ import { initializeApp } from "firebase/app";
 import Dashboard from './dashboard.tsx'
 import Register from './register.tsx'
 import Landing from './landing.tsx'
+import Details from './details.tsx'
+import { UserProvider } from './entity/userContext.tsx'
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4BolheSft4GjYAYCg9MDgp2_69ICOBsU",
@@ -22,15 +24,18 @@ initializeApp(firebaseConfig);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login/>} />  
-        <Route path="/" element={<Navigate to="/landing" />} />
-        <Route path="/home" element={<Dashboard/>} />
-        <Route path="/dashboard" element={<Dashboard/>} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/landing" element={<Landing/>} />
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login/>} />  
+          <Route path="/" element={<Navigate to="/landing" />} />
+          <Route path="/home" element={<Dashboard/>} />
+          <Route path="/dashboard" element={<Dashboard/>} />
+          <Route path="/register" element={<Register/>} />
+          <Route path="/landing" element={<Landing/>} />
+          <Route path="/details" element={<Details/>} />
+        </Routes>
+      </Router>
+    </UserProvider>
   </StrictMode>,
 )

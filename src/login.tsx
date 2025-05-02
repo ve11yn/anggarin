@@ -23,6 +23,11 @@ const Login = () => {
                 navigate("/Dashboard", { replace: true });
             })
             .catch(error => {
+                if (error.code === "auth/user-not-found") {
+                    setError("Email is not registered.");
+                  } else if (error.code === "auth/wrong-password") {
+                    setError("Incorrect password.");
+                  }
                 console.log(error);
                 setAuthingGoogle(false);
                 setError(error.message);    

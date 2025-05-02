@@ -2,6 +2,8 @@ import {useState} from "react";
 import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import "./index.css";   
+import { useContext } from "react";
+import { UserContext } from "./entity/userContext";
 
 const Register = () => {
     const auth = getAuth();
@@ -15,15 +17,20 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState(""); 
     const [error, setError] = useState("");
 
+    const {dispatch} = useContext(UserContext);
+
     const registerWithGoogle = async () => {
         setAuthingGoogle(true);
         setError("");
         signInWithPopup(auth, new GoogleAuthProvider())
             .then(response => {
                 console.log(response.user.uid);
-                navigate("/Dashboard", { replace: true });
+                navigate("/Details", { replace: true });
             })
             .catch(error => {
+                if (error.code === "auth/email-already-in-use") {
+                    setError("Email already registered.");
+                  }
                 console.log(error);
                 setAuthingGoogle(false);
                 setError(error.message);    
@@ -42,7 +49,8 @@ const Register = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(response => {
                 console.log(response.user.uid);
-                navigate("/Dashboard", { replace: true });
+                dispatch({ type: "SET_USER", payload: { email, password } }); 
+                navigate("/Details", { replace: true });
             })
             .catch(error => {
                 console.log(error);
