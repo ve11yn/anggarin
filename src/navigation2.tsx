@@ -21,7 +21,7 @@ const Navigation2 = () => {
             </button>
             <div className={`navigation2 ${isCollapsed ? 'collapsed' : ''}`}>
                 <div>
-                    <p>Anggar.in</p>
+                    <h2>Anggar.in</h2>
                 </div>
 
                 <div className="nav-links-2">

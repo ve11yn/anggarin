@@ -18,7 +18,7 @@ const Landing = () => {
             {/* Combined Info, How We Work, and Testimonials Section */}
             <section className="info-how-testimonials-section">
                 <div className="stats-description">
-                    <p>Trusted by</p>
+                    <h2>Trusted by</h2>
                     <div className="stats-row">
                         <div>
                             <h2>100</h2>
@@ -40,37 +40,47 @@ const Landing = () => {
                     <h2>How we work</h2>
                     <div className="how-steps">
                         <div>
-                            <h3>1 Create a Budget Plan</h3>
+                            <h1>1</h1>
+                            <h3>Create a Budget Plan</h3>
                             <p>The organization adds a new budget plan for a project or activity. Then, set the total amount, description, and time period.</p>
                         </div>
                         <div>
-                            <h3>2 Add Team Members</h3>
+                            <h1>2</h1>
+                            <h3>Add Team Members</h3>
                             <p>The budget owner can invite team members (e.g., project leaders, department heads) to join the plan. These members can request funds when needed.</p>
                         </div>
                         <div>
-                            <h3>3 Request Fund Usage</h3>
+                            <h1>3</h1>
+                            <h3>Request Fund Usage</h3>
                             <p>A team member creates a fund request with details: what the money is for, how much is needed, and supporting documents (invoice, receipts, etc.).</p>
                         </div>
                         <div>
-                            <h3>4 Approval by Budget Owner</h3>
+                            <h1>4</h1>
+                            <h3>Approval by Budget Owner</h3>
                             <p>The budget owner reviews each request. They can approve or reject it with comments.</p>
                         </div>
                     </div>
                 </div>
                 <div className="testimonials">
-                    <h2>What People Say</h2>
-                    <p className="testimonial-intro">Discover what our satisfied customers have to say about their experiences with our service.</p>
-                    <div className="testimonial-cards">
-                        <div className="testimonial-card">
-                            <p>"This platform has restored my confidence in charitable giving. I can see exactly how my donations are used."</p>
-                            <span>— Aisyah M., Donor</span>
-                        </div>
-                        <div className="testimonial-card">
-                            <p>"Our university fundraising events are now more credible. Transparency has boosted both trust and engagement."</p>
-                            <span>— Reza T., Student Organization Treasurer</span>
+                    <div className="testimonial-left">
+                        <h2>What People Say</h2>
+                        <p className="testimonial-intro">Discover what our satisfied customers have to say about their experiences with our service.</p>
+                        <button className="try-now-btn">Try Now</button>
+                    </div>
+
+                    <div className="testimonial-right">
+
+                        <div className="testimonial-cards">
+                            <div className="testimonial-card">
+                                <p>"This platform has restored my confidence in charitable giving. I can see exactly how my donations are used."</p>
+                                <span>— Aisyah M., Donor</span>
+                            </div>
+                            <div className="testimonial-card">
+                                <p>"Our university fundraising events are now more credible. Transparency has boosted both trust and engagement."</p>
+                                <span>— Reza T., Student Organization Treasurer</span>
+                            </div>
                         </div>
                     </div>
-                    <button className="try-now-btn">Try Now</button>
                 </div>
             </section>
 

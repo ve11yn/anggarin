@@ -53,28 +53,32 @@ const Login = () => {
     return (
         <div className="main-content">
             <h1 className="auth-title">Login to Anggar.in</h1>
-            <div className="auth-card">
-                <button onClick={loginWithGoogle} className="login-with-google">
-                    {authingGoogle ? "Logging in..." : "Log in with Google"}
-                </button>
-                <p>or</p>
-                <div className="login-form-container">
-                    <input 
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e)=>{setEmail(e.target.value);setError("");}} />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e)=>{setPassword(e.target.value);setError("");}} />
-                    <button onClick={loginWithEmail}>
-                        {authingEmail ? "Logging in..." : "Log in"}
+
+            <div className="login-container">
+
+                <div className="auth-card">
+                    <button onClick={loginWithGoogle} className="login-with-google">
+                        {authingGoogle ? "Logging in..." : "Log in with Google"}
                     </button>
+                    <p>or</p>
+                    <div className="login-form-container">
+                        <input 
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e)=>{setEmail(e.target.value);setError("");}} />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e)=>{setPassword(e.target.value);setError("");}} />
+                        <button onClick={loginWithEmail}>
+                            {authingEmail ? "Logging in..." : "Log in"}
+                        </button>
+                    </div>
+                    {error && <p className="error-message">{error}</p>}
+                    <p className="auth-link"><Link to="/register">Don't have an account? Create one here.</Link></p>
                 </div>
-                {error && <p className="error-message">{error}</p>}
-                <p className="auth-link"><Link to="/register">Don't have an account? Create one here.</Link></p>
             </div>
         </div>
     )
