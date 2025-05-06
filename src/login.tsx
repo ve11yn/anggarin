@@ -2,11 +2,15 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPasswor
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./index.css";
-
+import { useContext } from "react";
+import { UserContext } from "./entity/userContext";
+import { db } from "./main";
+import { doc, getDoc } from "firebase/firestore";
 
 const Login = () => {
     const auth = getAuth();
     const navigate = useNavigate();
+    const { dispatch } = useContext(UserContext);
 
     const [authingEmail, setAuthingEmail] = useState(false);
     const [authingGoogle, setAuthingGoogle] = useState(false);
@@ -14,48 +18,100 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    const fetchUserData = async (uid: string) => {
+        try {
+            console.log('Firestore instance:', db); // Debug line
+            
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                dispatch({ 
+                    type: "SET_USER", 
+                    payload: { 
+                        email: userData.email,
+                        name: userData.name || "",
+                    } 
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
+    };
+
     const loginWithGoogle = async () => {
         setAuthingGoogle(true);
         setError("");
-        signInWithPopup(auth, new GoogleAuthProvider())
-            .then(response => {
-                console.log(response.user.uid);
-                navigate("/Dashboard", { replace: true });
-            })
-            .catch(error => {
-                if (error.code === "auth/user-not-found") {
-                    setError("Email is not registered.");
-                  } else if (error.code === "auth/wrong-password") {
-                    setError("Incorrect password.");
-                  }
-                console.log(error);
-                setAuthingGoogle(false);
-                setError(error.message);    
-            });
+        
+        try {
+            const response = await signInWithPopup(auth, new GoogleAuthProvider());
+            const user = response.user;
+            
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                dispatch({
+                    type: "SET_USER",
+                    payload: {
+                        uid: user.uid,
+                        email: user.email || "",
+                        ...userData
+                    }
+                });
+            }
+            
+            navigate("/dashboard");
+        } catch (error: any) {
+            console.error(error);
+            if (error.code === "auth/user-not-found") {
+                setError("Email is not registered.");
+            } else if (error.code === "auth/wrong-password") {
+                setError("Incorrect password.");
+            } else {
+                setError(error.message);
+            }
+            setAuthingGoogle(false);
+        }
     };
 
     const loginWithEmail = async () => {
         setAuthingEmail(true);
         setError("");
-        signInWithEmailAndPassword(auth, email, password)
-            .then(response => {
-                console.log(response.user.uid);
-                navigate("/Dashboard", { replace: true });
-            })
-            .catch(error => {
-                console.log(error);
-                setAuthingEmail(false);
-                setError(error.message);    
-            });
+        
+        try {
+            const response = await signInWithEmailAndPassword(auth, email, password);
+            const user = response.user;
+            
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                dispatch({
+                    type: "SET_USER",
+                    payload: {
+                        uid: user.uid,
+                        email: user.email || "",
+                        ...userData
+                    }
+                });
+            }
+            
+            navigate("/dashboard");
+        } catch (error: any) {
+            console.error(error);
+            if (error.code === "auth/user-not-found") {
+                setError("Email is not registered.");
+            } else if (error.code === "auth/wrong-password") {
+                setError("Incorrect password.");
+            } else {
+                setError(error.message);
+            }
+            setAuthingEmail(false);
+        }
     };
-
 
     return (
         <div className="main-content">
-            <h1 className="auth-title">Login to Anggar.in</h1>
-
             <div className="login-container">
-
+                <h1 className="auth-title">Login to Anggar.in</h1>
                 <div className="auth-card">
                     <button onClick={loginWithGoogle} className="login-with-google">
                         {authingGoogle ? "Logging in..." : "Log in with Google"}
@@ -66,12 +122,14 @@ const Login = () => {
                             type="email"
                             placeholder="Email"
                             value={email}
-                            onChange={(e)=>{setEmail(e.target.value);setError("");}} />
+                            onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                        />
                         <input
                             type="password"
                             placeholder="Password"
                             value={password}
-                            onChange={(e)=>{setPassword(e.target.value);setError("");}} />
+                            onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                        />
                         <button onClick={loginWithEmail}>
                             {authingEmail ? "Logging in..." : "Log in"}
                         </button>
@@ -81,7 +139,7 @@ const Login = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Login;

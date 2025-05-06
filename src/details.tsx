@@ -1,63 +1,173 @@
-import { useState } from "react";
-import {useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "./main";
 import { UserContext } from "./entity/userContext";
 
 const Details = () => {
+    const auth = getAuth();
     const navigate = useNavigate();
+    const { state, dispatch } = useContext(UserContext);
+    
+    const [formData, setFormData] = useState({
+        name: state.name || "",
+        address: state.address || "",
+        city: state.city || "",
+        phone: state.phone || "",
+        email: state.email || "",
+        state: state.state || "",
+        zip: state.zip || "",
+        fundCount: state.fundCount || "0",
+        totalFund: state.totalFund || "0",
+        remainingFund: state.remainingFund || "0"
+    });
 
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [address, setAddress] = useState("");
-    const [city, setCity] = useState("");   
-    const [state, setState] = useState("");
-    const [zip, setZip] = useState("");
-    const [error, setError] = useState("");
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-    const { dispatch } = useContext(UserContext);
-
-    const handleSubmit = () => {
-        const phoneRegex = /^[0-9]{12}$/; 
-        if (!name || !phone || !address || !city || !state || !zip){
-            setError("All fields are required.");
-            return;
-        } 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         
-        if (!phoneRegex.test(phone)) {
-            setError("Phone must be a 12-digit number.");
-            return;
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const updatedData = {
+                    ...formData,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                await setDoc(doc(db, "users", user.uid), updatedData, { merge: true });
+                
+                dispatch({
+                    type: "SET_USER",
+                    payload: updatedData
+                });
+                
+                navigate("/dashboard");
+            }
+        } catch (error) {
+            console.error("Error saving user details:", error);
         }
-        dispatch({ 
-            type: "SET_USER", 
-            payload: { name, phone, address, city, state, zip } 
-        });
-
-        setError("")
-        navigate("/Dashboard");
-    }
+    };
 
     return (
-        <div className="details">
-            <h1 className="details-h1">Fill in your details.</h1>
-
-            <div className="details-container">
-
-                <div className="details-form-container">
-                    <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-                    <input type="text" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                    <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
-                    <input type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-                    <input type="text" placeholder="State" value={state} onChange={(e) => setState(e.target.value)} />
-                    <input type="text" placeholder="Zip" value={zip} onChange={(e) => setZip(e.target.value)} />
+        <div className="details-container">
+            <h2>Complete your details.</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label>Full Name</label>
+                    <input 
+                        type="text" 
+                        name="name" 
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-
-                {error && <p className="error-message">{error}</p>}
-
-                <button onClick={handleSubmit}>Save</button>
-            </div>
-
+                
+                <div className="form-group">
+                    <label>Address</label>
+                    <input 
+                        type="text" 
+                        name="address" 
+                        value={formData.address}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <label>City</label>
+                    <input 
+                        type="text" 
+                        name="city" 
+                        value={formData.city}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <label>State</label>
+                    <input 
+                        type="text" 
+                        name="state" 
+                        value={formData.state}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <label>ZIP Code</label>
+                    <input 
+                        type="text" 
+                        name="zip" 
+                        value={formData.zip}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <label>Phone Number</label>
+                    <input 
+                        type="tel" 
+                        name="phone" 
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                
+                <div>
+                    <input 
+                        type="hidden" 
+                        name="email" 
+                        value={formData.email}
+                    />
+                </div>
+                
+                {/* <div className="form-group">
+                    <label>Initial Fund Count</label>
+                    <input 
+                        type="number" 
+                        name="fundCount" 
+                        value={formData.fundCount}
+                        onChange={handleChange}
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <label>Total Fund</label>
+                    <input 
+                        type="number" 
+                        name="totalFund" 
+                        value={formData.totalFund}
+                        onChange={handleChange}
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <label>Remaining Fund</label>
+                    <input 
+                        type="number" 
+                        name="remainingFund" 
+                        value={formData.remainingFund}
+                        onChange={handleChange}
+                    />
+                </div> */}
+                
+                <button type="submit">Save Details</button>
+            </form>
         </div>
-    )
-}
+    );
+};
 
 export default Details;

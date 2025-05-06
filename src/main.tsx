@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom' 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './login.tsx'
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import Dashboard from './dashboard.tsx'
 import Register from './register.tsx'
 import Landing from './landing.tsx'
@@ -20,20 +22,32 @@ const firebaseConfig = {
   measurementId: "G-EL7WMXMQT0"
 };
 
-initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app); 
+
+
+import { enableIndexedDbPersistence } from "firebase/firestore";
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code === 'failed-precondition') {
+    console.warn("Offline persistence can only be enabled in one tab at a time.");
+  } else if (err.code === 'unimplemented') {
+    console.warn("The current browser does not support offline persistence");
+  }
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <UserProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login/>} />  
+          <Route path="/login" element={<Login />} />  
           <Route path="/" element={<Navigate to="/landing" />} />
-          <Route path="/home" element={<Dashboard/>} />
-          <Route path="/dashboard" element={<Dashboard/>} />
-          <Route path="/register" element={<Register/>} />
-          <Route path="/landing" element={<Landing/>} />
-          <Route path="/details" element={<Details/>} />
+          <Route path="/home" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/landing" element={<Landing />} />
+          <Route path="/details" element={<Details />} />
         </Routes>
       </Router>
     </UserProvider>

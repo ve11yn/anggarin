@@ -1,44 +1,62 @@
-import {useState} from "react";
+import { useState } from "react";
 import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
-import "./index.css";   
+import "./index.css";
 import { useContext } from "react";
 import { UserContext } from "./entity/userContext";
+import { db } from "./main";
+import { doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
     const auth = getAuth();
     const navigate = useNavigate();
+    const { dispatch } = useContext(UserContext);
 
     const [authingEmail, setAuthingEmail] = useState(false);
     const [authingGoogle, setAuthingGoogle] = useState(false);
-
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState(""); 
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-
-    const {dispatch} = useContext(UserContext);
 
     const registerWithGoogle = async () => {
         setAuthingGoogle(true);
         setError("");
-        signInWithPopup(auth, new GoogleAuthProvider())
-            .then(response => {
-                console.log(response.user.uid);
-                navigate("/Details", { replace: true });
-            })
-            .catch(error => {
-                if (error.code === "auth/email-already-in-use") {
-                    setError("Email already registered.");
-                  }
-                console.log(error);
-                setAuthingGoogle(false);
-                setError(error.message);    
+        
+        try {
+            const response = await signInWithPopup(auth, new GoogleAuthProvider());
+            const user = response.user;
+            
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                name: user.displayName || "",
+                createdAt: new Date().toISOString(),
+                provider: "google"
             });
-    }
+
+            dispatch({ 
+                type: "SET_USER", 
+                payload: { 
+                    uid: user.uid,
+                    email: user.email || "",
+                    name: user.displayName || ""
+                } 
+            });
+            
+            navigate("/details");
+        } catch (error: any) {
+            console.error(error);
+            if (error.code === "auth/email-already-in-use") {
+                setError("Email already registered.");
+            } else {
+                setError(error.message);
+            }
+            setAuthingGoogle(false);
+        }
+    };
 
     const registerWithEmail = async () => {
-        if (password !== confirmPassword){
+        if (password !== confirmPassword) {
             setError("Passwords do not match");
             return;
         }
@@ -46,24 +64,36 @@ const Register = () => {
         setAuthingEmail(true);
         setError("");
 
-        createUserWithEmailAndPassword(auth, email, password)
-            .then(response => {
-                console.log(response.user.uid);
-                dispatch({ type: "SET_USER", payload: { email, password } }); 
-                navigate("/Details", { replace: true });
-            })
-            .catch(error => {
-                console.log(error);
-                setError(error.message);    
-                setAuthingEmail(false);
-            })
-    }
+        try {
+            const response = await createUserWithEmailAndPassword(auth, email, password);
+            const user = response.user;
+            
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                createdAt: new Date().toISOString(),
+                provider: "email"
+            });
+
+            dispatch({ 
+                type: "SET_USER", 
+                payload: { 
+                    uid: user.uid,
+                    email: email 
+                } 
+            });
+            
+            navigate("/details");
+        } catch (error: any) {
+            console.error(error);
+            setError(error.message);
+            setAuthingEmail(false);
+        }
+    };
 
     return (
         <div className="main-content">
-            <h1 className="auth-title">Register to Anggar.in</h1>
-
             <div className="register-container">
+                <h1 className="auth-title">Register to <span>Anggar.in</span></h1>
                 <div className="auth-card">
                     <button onClick={registerWithGoogle} className="login-with-google">
                         {authingGoogle ? "Registering..." : "Register with Google"}
@@ -74,17 +104,20 @@ const Register = () => {
                             type="email"
                             placeholder="Email"
                             value={email}
-                            onChange={(e)=>{setEmail(e.target.value);setError("");}} />
+                            onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                        />
                         <input
                             type="password"
                             placeholder="Password"
                             value={password}
-                            onChange={(e)=>{setPassword(e.target.value);setError("");}} />
+                            onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                        />
                         <input
                             type="password"
                             placeholder="Confirm Password"
                             value={confirmPassword}
-                            onChange={(e)=>{setConfirmPassword(e.target.value);setError("");}} />
+                            onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
+                        />
                         <button onClick={registerWithEmail}>
                             {authingEmail ? "Registering..." : "Register"}
                         </button>
@@ -94,7 +127,7 @@ const Register = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Register;
