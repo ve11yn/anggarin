@@ -1,0 +1,91 @@
+.profile-container {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .profile-box {
+    width: 95vw;
+    max-width: none;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+  }
+  
+  .profile-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #ccc;
+    margin-bottom: 1rem;
+  }
+  
+  .profile-id {
+    margin-top: 0.5rem;
+    color: #777;
+  }
+  
+  .profile-button {
+    padding: 0.5rem 1rem;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .profile-button.cancel {
+    background-color: #888;
+  }
+  
+  .profile-right {
+    flex: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+  }
+  
+  .profile-field {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .profile-label {
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+  }
+  
+  .profile-input,
+  .profile-textarea {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .profile-textarea {
+    grid-column: span 2;
+    resize: vertical;
+    min-height: 80px;
+  }
+  
+  .profile-buttons {
+    grid-column: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  

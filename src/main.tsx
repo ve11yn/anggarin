@@ -11,6 +11,7 @@ import Register from './register.tsx'
 import Landing from './landing.tsx'
 import Details from './details.tsx'
 import BudgetPlan from './budgetPlan.tsx'
+import Profile from './profile.tsx'
 import { UserProvider } from './entity/userContext.tsx'
 
 const firebaseConfig = {
@@ -49,6 +50,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/register" element={<Register />} />
           <Route path="/landing" element={<Landing />} />
           <Route path="/details" element={<Details />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/budgetPlan" element={<BudgetPlan />}></Route>
         </Routes>
       </Router>
