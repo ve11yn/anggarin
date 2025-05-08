@@ -1,14 +1,16 @@
 import { UserContext } from "./entity/userContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import Navigation2 from "./navigation2";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
     const {state} = useContext(UserContext);
+    const [isNavCollapsed, setIsNavCollapsed] = useState(false);
     return (
         <div className="page-container">
-            <Navigation2/>
+            {/* <Navigation2/>
             <div className="dashboard">
-                <h3>Welcome back,</h3>
+                <h3>Welcome,</h3>
                 <h2>{state.name || "User"}</h2>
             </div>
 
@@ -48,7 +50,53 @@ const Dashboard = () => {
                             </p>
                         </div>
                     </div>
+                </div> */}
+
+            <Navigation2 
+                collapsed={isNavCollapsed} 
+                onToggleCollapse={() => setIsNavCollapsed(!isNavCollapsed)}
+            />
+
+            <div className={`main-content-dashboard ${isNavCollapsed ? 'nav-collapsed' : ''}` }id="main-content-dashboard">
+                <h3>Welcome, </h3>
+                <h2><b>{state.name}</b></h2>
+
+                <div className="content-container">
+                    <div className="left">
+
+                        <div className="fund">
+                            <div className="total-budget" id="content-box">
+                                <h2>{state.totalFund}</h2>
+                                <p>Total Fund</p>
+                            </div>
+
+                            <div className="remaining-budget" id="content-box">
+                                <h2>{state.remainingFund}</h2>
+                                <p>Remaining Fund</p>
+                            </div>
+                        </div>
+
+
+                        <Link to="/budgetPlan">
+                            <div className="plan" id="content-box">
+                                <p>Budget Plans</p>
+
+                                <h1>TEST</h1>
+                            </div>
+                        </Link>
+                        
+                    </div>
+
+                    <div className="right">
+                        <div className="activity" id="content-box">
+                            <p>Latest Activities</p>
+                            <h1>TEST</h1>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+
         </div>
         
     );  
