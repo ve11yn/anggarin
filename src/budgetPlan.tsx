@@ -1,11 +1,11 @@
+import type { BudgetPlan } from "./entity/budgetPlanContext";
 
-
-const BudgetPlan = () => {
+const BudgetPlanComponent = () => {
     return (
         <div>
-            <h1>Hello World</h1>
+            <h2>Hello World</h2>
         </div>
     )
 }
 
-export default BudgetPlan;
+export default BudgetPlanComponent;

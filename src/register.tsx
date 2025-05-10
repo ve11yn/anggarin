@@ -28,6 +28,7 @@ const Register = () => {
             const user = response.user;
             
             await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
                 email: user.email,
                 name: user.displayName || "",
                 createdAt: new Date().toISOString(),

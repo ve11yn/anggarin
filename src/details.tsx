@@ -11,23 +11,29 @@ const Details = () => {
     const { state, dispatch } = useContext(UserContext);
     
     const [formData, setFormData] = useState({
+        uid: state.uid || "",
         name: state.name || "",
-        address: state.address || "",
-        city: state.city || "",
         phone: state.phone || "",
-        email: state.email || "",
-        state: state.state || "",
-        zip: state.zip || "",
-        fundCount: state.fundCount || "0",
-        totalFund: state.totalFund || "0",
-        remainingFund: state.remainingFund || "0"
+        location: state.location || "",
+        organization: state.organization || "",
+        department: state.department || "",
+        position: state.position || "",
+        description: state.description || "",
+        fundCount: state.fundCount || 0,
+        totalFund: state.totalFund || 0,
+        remainingFund: state.remainingFund || 0,
+        createdAt: state.createdAt || new Date().toISOString(),
+        updatedAt: state.updatedAt || "",
+        budgetPlans: state.budgetPlans || [] 
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: name === "fundCount" || name === "totalFund" || name === "remainingFund" 
+                   ? Number(value) 
+                   : value
         }));
     };
 
@@ -70,51 +76,7 @@ const Details = () => {
                         required
                     />
                 </div>
-                
-                <div className="form-group">
-                    <label>Address</label>
-                    <input 
-                        type="text" 
-                        name="address" 
-                        value={formData.address}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                
-                <div className="form-group">
-                    <label>City</label>
-                    <input 
-                        type="text" 
-                        name="city" 
-                        value={formData.city}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                
-                <div className="form-group">
-                    <label>State</label>
-                    <input 
-                        type="text" 
-                        name="state" 
-                        value={formData.state}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                
-                <div className="form-group">
-                    <label>ZIP Code</label>
-                    <input 
-                        type="text" 
-                        name="zip" 
-                        value={formData.zip}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                
+            
                 <div className="form-group">
                     <label>Phone Number</label>
                     <input 
@@ -125,44 +87,61 @@ const Details = () => {
                         required
                     />
                 </div>
-                
-                <div>
-                    <input 
-                        type="hidden" 
-                        name="email" 
-                        value={formData.email}
-                    />
-                </div>
-                
-                {/* <div className="form-group">
-                    <label>Initial Fund Count</label>
-                    <input 
-                        type="number" 
-                        name="fundCount" 
-                        value={formData.fundCount}
-                        onChange={handleChange}
-                    />
-                </div>
-                
+
                 <div className="form-group">
-                    <label>Total Fund</label>
+                    <label>Location</label>
                     <input 
-                        type="number" 
-                        name="totalFund" 
-                        value={formData.totalFund}
+                        type="text" 
+                        name="location" 
+                        value={formData.location}
                         onChange={handleChange}
+                        required
                     />
                 </div>
-                
+
                 <div className="form-group">
-                    <label>Remaining Fund</label>
+                    <label>Organization</label>
                     <input 
-                        type="number" 
-                        name="remainingFund" 
-                        value={formData.remainingFund}
+                        type="text" 
+                        name="organization" 
+                        value={formData.organization}
                         onChange={handleChange}
+                        required
                     />
-                </div> */}
+                </div>
+
+                <div className="form-group">
+                    <label>Department</label>
+                    <input 
+                        type="text" 
+                        name="department" 
+                        value={formData.department}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Position</label>
+                    <input 
+                        type="text" 
+                        name="position" 
+                        value={formData.position}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Description</label>
+                    <input 
+                        type="text" 
+                        name="description" 
+                        value={formData.description}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
                 
                 <button type="submit">Save Details</button>
             </form>
