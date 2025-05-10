@@ -6,8 +6,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../main";
 
-// document structure in firestore
-export interface BudgetPlan {
+export interface BudgetPlanContext {
     planId: string;
     userId: string; 
     title: string;
@@ -16,39 +15,34 @@ export interface BudgetPlan {
     totalFund: number;
     remainingFund: number;
     createdAt: string;
-    updatedAt? : string;
-    fundRequests?: string[]
+    updatedAt?: string;
+    fundRequests?: string[];
 }
 
 interface BudgetPlanState {
-    plans: BudgetPlan[],
-    currentPlan: BudgetPlan | null;
+    plans: BudgetPlanContext[];
+    currentPlan: BudgetPlanContext | null;
 }
 
-// enums all state modification
 type BudgetPlanAction = 
-    | { type: "SET_PLANS"; payload: BudgetPlan[] }
-    | { type: "SET_CURRENT_PLAN"; payload: BudgetPlan }
-    | { type: "ADD_PLAN"; payload: BudgetPlan }
-    | { type: "UPDATE_PLAN"; payload: BudgetPlan }
+    | { type: "SET_PLANS"; payload: BudgetPlanContext[] }
+    | { type: "SET_CURRENT_PLAN"; payload: BudgetPlanContext }
+    | { type: "ADD_PLAN"; payload: BudgetPlanContext }
+    | { type: "UPDATE_PLAN"; payload: BudgetPlanContext }
     | { type: "ADD_MEMBER"; payload: { planId: string; userId: string } }
     | { type: "ADD_FUND_REQUEST"; payload: { planId: string; requestId: string } }
     | { type: "UPDATE_FUNDS"; payload: { planId: string; amount: number } };
 
-
-
-// const BudgetPlanContext = createContext<{ ... }>(null!);
-// Creates a context that holds the state and functions to manipulate BudgetPlan data. null! bypasses TypeScript null checks.
 const BudgetPlanContext = createContext<{
     state: BudgetPlanState;
-    createPlan: (plan: Omit<BudgetPlan, "planId" | "createdAt">) => Promise<string>;
-    getPlan: (planId: string) => Promise<BudgetPlan | null>;
+    createPlan: (plan: Omit<BudgetPlanContext, "planId" | "createdAt">) => Promise<string>;
+    getPlan: (planId: string) => Promise<BudgetPlanContext | null>;
     addMember: (planId: string, userId: string) => Promise<void>;
     addFundRequest: (planId: string, requestId: string) => Promise<void>;
     updateFunds: (planId: string, amount: number) => Promise<void>;
-    getUserPlans: (userId: string) => Promise<BudgetPlan[]>;
+    getUserPlans: (userId: string) => Promise<BudgetPlanContext[]>;
+    getAllPlans: () => Promise<BudgetPlanContext[]>; // Added this line
 }>(null!);
-      
 
 // reducer function
 // Updates the state based on the action dispatched (adds plans, updates funds, etc.).
@@ -108,101 +102,103 @@ const budgetPlanReducer = (state: BudgetPlanState, action: BudgetPlanAction): Bu
     }
   };
   
-
-// provider component
-// provide context in the app, such as:
-// createPlan, getPlan, addMember, addFundRequest, updateFunds, getUserPlans
   export const BudgetPlanProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(budgetPlanReducer, {
-      plans: [],
-      currentPlan: null
+        plans: [],
+        currentPlan: null
     });
-  
-    const createPlan = async (planData: Omit<BudgetPlan, "planId" | "createdAt">) => {
-      const planRef = doc(collection(db, "budgetPlans"));
-      const newPlan: BudgetPlan = {
-        ...planData,
-        planId: planRef.id,
-        createdAt: new Date().toISOString(),
-        remainingFund: planData.totalFund,
-        fundRequests: []
-      };
-      
-      await setDoc(planRef, newPlan);
-      dispatch({ type: "ADD_PLAN", payload: newPlan });
-      
-      // Update user's plan list
-      await updateDoc(doc(db, "users", planData.userId), {
-        budgetPlans: arrayUnion(planRef.id)
-      });
-      
-      return planRef.id;
+
+    const createPlan = async (planData: Omit<BudgetPlanContext, "planId" | "createdAt">) => {
+        const planRef = doc(collection(db, "budgetPlan")); // Singular
+        const newPlan: BudgetPlanContext = {
+            ...planData,
+            planId: planRef.id,
+            createdAt: new Date().toISOString(),
+            remainingFund: planData.totalFund,
+            fundRequests: []
+        };
+        
+        await setDoc(planRef, newPlan);
+        dispatch({ type: "ADD_PLAN", payload: newPlan });
+        
+        await updateDoc(doc(db, "users", planData.userId), { // Singular
+            budgetPlans: arrayUnion(planRef.id)
+        });
+        
+        return planRef.id;
     };
-  
+
     const getPlan = async (planId: string) => {
-      const planSnap = await getDoc(doc(db, "budgetPlans", planId));
-      if (planSnap.exists()) {
-        const plan = planSnap.data() as BudgetPlan;
-        dispatch({ type: "SET_CURRENT_PLAN", payload: plan });
-        return plan;
-      }
-      return null;
+        const planSnap = await getDoc(doc(db, "budgetPlan", planId)); // Singular
+        if (planSnap.exists()) {
+            const plan = planSnap.data() as BudgetPlanContext;
+            dispatch({ type: "SET_CURRENT_PLAN", payload: plan });
+            return plan;
+        }
+        return null;
     };
-  
+
+    const getAllPlans = async () => {
+        const snapshot = await getDocs(collection(db, "budgetPlan")); // Singular
+        const plans = snapshot.docs.map(doc => doc.data() as BudgetPlanContext);
+        dispatch({ type: "SET_PLANS", payload: plans });
+        return plans;
+    };
+
     const addMember = async (planId: string, userId: string) => {
-      await updateDoc(doc(db, "budgetPlans", planId), {
-        members: arrayUnion(userId),
-        updatedAt: new Date().toISOString()
-      });
-      dispatch({ type: "ADD_MEMBER", payload: { planId, userId } });
-      
-      // Update user's memberPlans
-      await updateDoc(doc(db, "users", userId), {
-        memberPlans: arrayUnion(planId)
-      });
+        await updateDoc(doc(db, "budgetPlan", planId), { // Singular
+            members: arrayUnion(userId),
+            updatedAt: new Date().toISOString()
+        });
+        dispatch({ type: "ADD_MEMBER", payload: { planId, userId } });
+        
+        await updateDoc(doc(db, "users", userId), { // Singular
+            memberPlans: arrayUnion(planId),
+            updatedAt: new Date().toISOString() 
+        });
     };
-  
+
     const addFundRequest = async (planId: string, requestId: string) => {
-      await updateDoc(doc(db, "budgetPlans", planId), {
-        fundRequests: arrayUnion(requestId),
-        updatedAt: new Date().toISOString()
-      });
-      dispatch({ type: "ADD_FUND_REQUEST", payload: { planId, requestId } });
+        await updateDoc(doc(db, "budgetPlan", planId), { // Singular
+            fundRequests: arrayUnion(requestId),
+            updatedAt: new Date().toISOString()
+        });
+        dispatch({ type: "ADD_FUND_REQUEST", payload: { planId, requestId } });
     };
-  
+
     const updateFunds = async (planId: string, amount: number) => {
-      await updateDoc(doc(db, "budgetPlans", planId), {
-        remainingFund: increment(amount),
-        updatedAt: new Date().toISOString()
-      });
-      dispatch({ type: "UPDATE_FUNDS", payload: { planId, amount } });
+        await updateDoc(doc(db, "budgetPlan", planId), { // Singular
+            remainingFund: increment(amount),
+            updatedAt: new Date().toISOString()
+        });
+        dispatch({ type: "UPDATE_FUNDS", payload: { planId, amount } });
     };
-  
+
     const getUserPlans = async (userId: string) => {
-      const q = query(
-        collection(db, "budgetPlans"),
-        where("members", "array-contains", userId)
-      );
-      const snapshot = await getDocs(q);
-      const plans = snapshot.docs.map(doc => doc.data() as BudgetPlan);
-      dispatch({ type: "SET_PLANS", payload: plans });
-      return plans;
+        const q = query(
+            collection(db, "budgetPlan"), // Singular
+            where("members", "array-contains", userId)
+        );
+        const snapshot = await getDocs(q);
+        const plans = snapshot.docs.map(doc => doc.data() as BudgetPlanContext);
+        dispatch({ type: "SET_PLANS", payload: plans });
+        return plans;
     };
-  
-    // exporting the provider context so this is available to any component
+
     return (
-      <BudgetPlanContext.Provider value={{
-        state,
-        createPlan,
-        getPlan,
-        addMember,
-        addFundRequest,
-        updateFunds,
-        getUserPlans
-      }}>
-        {children}
-      </BudgetPlanContext.Provider>
+        <BudgetPlanContext.Provider value={{
+            state,
+            createPlan,
+            getPlan,
+            addMember,
+            addFundRequest,
+            updateFunds,
+            getUserPlans,
+            getAllPlans
+        }}>
+            {children}
+        </BudgetPlanContext.Provider>
     );
-  };
-  
-  export const useBudgetPlans = () => useContext(BudgetPlanContext);
+};
+
+export const useBudgetPlans = () => useContext(BudgetPlanContext);

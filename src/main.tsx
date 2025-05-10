@@ -10,9 +10,10 @@ import Dashboard from './dashboard.tsx'
 import Register from './register.tsx'
 import Landing from './landing.tsx'
 import Details from './details.tsx'
-import BudgetPlan from './budgetPlan.tsx'
 import Profile from './profile.tsx'
+// import BudgetPlan from './budgetPlan.tsx'
 import { UserProvider } from './entity/userContext.tsx'
+import { BudgetPlanProvider } from './entity/budgetPlanContext'
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4BolheSft4GjYAYCg9MDgp2_69ICOBsU",
@@ -30,6 +31,7 @@ export const auth = getAuth(app);
 
 
 import { enableIndexedDbPersistence } from "firebase/firestore";
+// import CreateBudgetPlan from './createBudgetPlan.tsx'
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === 'failed-precondition') {
     console.warn("Offline persistence can only be enabled in one tab at a time.");
@@ -41,19 +43,22 @@ enableIndexedDbPersistence(db).catch((err) => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <UserProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />  
-          <Route path="/" element={<Navigate to="/landing" />} />
-          <Route path="/home" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/details" element={<Details />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/budgetPlan" element={<BudgetPlan />}></Route>
-        </Routes>
-      </Router>
+      <BudgetPlanProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />  
+            <Route path="/" element={<Navigate to="/landing" />} />
+            <Route path="/home" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/details" element={<Details />} />
+            <Route path="/profile" element={<Profile />} />
+            {/* <Route path="/budgetPlan" element={<BudgetPlan/>}></Route> */}
+            {/* <Route path="/createBudgetPlan" element={<CreateBudgetPlan/>}></Route> */}
+          </Routes>
+        </Router>
+      </BudgetPlanProvider>
     </UserProvider>
   </StrictMode>,
 )
