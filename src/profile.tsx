@@ -1,23 +1,23 @@
-// Profile.tsx
-import React, { useState } from 'react';
 import './profile.css';
 import { useNavigate } from 'react-router-dom';
-
+import { UserContext } from "./entity/userContext";
+import { useContext, useState } from "react";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { state, updateUser } = useContext(UserContext);  // Access the updateUser function
   // Initial user data
   const [formData, setFormData] = useState({
-    id: "USR123456",
-    name: "Anthony Webb",
-    password: "********",
-    email: "myemail@address.com",
-    phone: "",
-    location: "",
-    organization: "",
-    department: "",
-    position: "",
-    description: "",
+    id: state.uid,
+    name: state.name,
+    password: state.password,
+    email: state.email,
+    phone: state.phone,
+    location: state.location,
+    organization: state.organization,
+    department: state.department,
+    position: state.position,
+    description: state.description,
   });
 
   // Data being edited
@@ -32,11 +32,16 @@ const Profile: React.FC = () => {
     setEditData({ ...editData, [name]: value });
   };
 
-
   // Save the changes
-  const handleSave = () => {
-    setFormData({ ...editData });
-    setEditing(false);
+  const handleSave = async () => {
+    const success = await updateUser(editData); // Call the context function to update the profile
+
+    if (success) {
+      setFormData({ ...editData });
+      setEditing(false); // Exit editing mode
+    } else {
+      alert('Failed to save changes.');
+    }
   };
 
   // Cancel editing
@@ -50,13 +55,12 @@ const Profile: React.FC = () => {
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files && e.target.files[0]) {
-    const fileURL = URL.createObjectURL(e.target.files[0]);
-    setProfileImage(fileURL);
-  }
-};
-
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const fileURL = URL.createObjectURL(e.target.files[0]);
+      setProfileImage(fileURL);
+    }
+  };
 
   return (
     <div className="profile-container">
@@ -159,6 +163,6 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       </div>
     </div>
   );
-}
+};
 
 export default Profile;

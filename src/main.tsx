@@ -11,7 +11,7 @@ import Register from './register.tsx'
 import Landing from './landing.tsx'
 import Details from './details.tsx'
 import Profile from './profile.tsx'
-// import BudgetPlan from './budgetPlan.tsx'
+import BudgetPlan from './budgetPlan.tsx'
 import { UserProvider } from './entity/userContext.tsx'
 import { BudgetPlanProvider } from './entity/budgetPlanContext'
 
@@ -31,6 +31,7 @@ export const auth = getAuth(app);
 
 
 import { enableIndexedDbPersistence } from "firebase/firestore";
+import BudgetPlans from './budgetPlan.tsx'
 // import CreateBudgetPlan from './createBudgetPlan.tsx'
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === 'failed-precondition') {
@@ -54,6 +55,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/landing" element={<Landing />} />
             <Route path="/details" element={<Details />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/budgetPlan" element={<BudgetPlan />} />
             {/* <Route path="/budgetPlan" element={<BudgetPlan/>}></Route> */}
             {/* <Route path="/createBudgetPlan" element={<CreateBudgetPlan/>}></Route> */}
           </Routes>

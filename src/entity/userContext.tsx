@@ -7,6 +7,7 @@ export interface UserState {
     uid: string;
     email: string;
     name: string;
+    password: string;
     phone: string;
     location: string;
     organization: string;
@@ -26,6 +27,7 @@ const initialState: UserState = {
     uid: "",
     email: "",
     name: "",
+    password: "",
     phone: "",
     location: "",
     organization: "",
@@ -81,14 +83,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const auth = getAuth();
 
     // updateUser, addBudgetPlan
+    
+
     const updateUser = async (data: Partial<UserState>) => {
-        if (!state.uid) return;
+    if (!state.uid) {
+        console.error("No user UID found. Cannot update user.");
+        return false; // Early return if no UID
+    }
+
+    try {
+        console.log("Updating user data in Firestore:", data);
+        // Firebase update function
         await updateDoc(doc(db, "users", state.uid), {
             ...data,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
         });
+
+        // After successful update, dispatch the updated data to the state
         dispatch({ type: "SET_USER", payload: data });
-    };
+        console.log("User data successfully updated.");
+        return true; // Indicate success
+    } catch (error) {
+        console.error("Error updating user data:", error);
+        return false; // Indicate failure
+    }
+};
+
+
 
     const addBudgetPlan = async (planId: string) => {
         if (!state.uid) return;
