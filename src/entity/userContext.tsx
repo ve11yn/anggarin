@@ -1,6 +1,6 @@
 import { createContext, useReducer, ReactNode, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { arrayUnion, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../main";
 
 export interface UserState {
@@ -8,15 +8,18 @@ export interface UserState {
     email: string;
     name: string;
     phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zip: string;
-    fundCount: string;
-    totalFund: string;
-    remainingFund: string;
+    location: string;
+    organization: string;
+    department: string;
+    position: string;
+    description: string;
+    fundCount: number;
+    totalFund: number;
+    remainingFund: number;
     createdAt: string;
     updatedAt: string;
+    // how many plans this user have
+    budgetPlans? : string[];
 }
 
 const initialState: UserState = {
@@ -24,25 +27,34 @@ const initialState: UserState = {
     email: "",
     name: "",
     phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
-    fundCount: "",
-    totalFund: "",
-    remainingFund: "",
+    location: "",
+    organization: "",
+    department: "",
+    position: "",
+    description: "",
+    fundCount: 0,
+    totalFund: 0,
+    remainingFund: 0,
     createdAt: "",
-    updatedAt: ""
+    updatedAt: "",
+    budgetPlans: [],
 };
+
 
 type UserAction = 
     | { type: "SET_USER"; payload: Partial<UserState> }
+    | { type: "ADD_BUDGET_PLAN"; payload: string}
     | { type: "LOGOUT" };
 
 const reducer = (state: UserState, action: UserAction): UserState => {
     switch (action.type) {
         case "SET_USER":
             return { ...state, ...action.payload };
+        case "ADD_BUDGET_PLAN":
+            return { 
+                ...state, 
+                budgetPlans: [...(state.budgetPlans || []), action.payload] 
+            };
         case "LOGOUT":
             return initialState;
         default:
@@ -53,16 +65,40 @@ const reducer = (state: UserState, action: UserAction): UserState => {
 interface UserContextType {
     state: UserState;
     dispatch: React.Dispatch<UserAction>;
+    updateUser: (data: Partial<UserState>) => Promise<void>;
+    addBudgetPlan: (planId: string) => Promise<void>;
 }
 
 export const UserContext = createContext<UserContextType>({
     state: initialState,
     dispatch: () => null,
+    updateUser: async () => {},
+    addBudgetPlan: async () => {}
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const auth = getAuth();
+
+    // updateUser, addBudgetPlan
+    const updateUser = async (data: Partial<UserState>) => {
+        if (!state.uid) return;
+        await updateDoc(doc(db, "users", state.uid), {
+            ...data,
+            updatedAt: new Date().toISOString()
+        });
+        dispatch({ type: "SET_USER", payload: data });
+    };
+
+    const addBudgetPlan = async (planId: string) => {
+        if (!state.uid) return;
+        await updateDoc(doc(db, "users", state.uid), {
+            budgetPlans: arrayUnion(planId),
+            updatedAt: new Date().toISOString()
+        });
+        dispatch({ type: "ADD_BUDGET_PLAN", payload: planId });
+    };
+
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -70,19 +106,26 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
+                        const data = userDoc.data();
                         dispatch({
                             type: "SET_USER",
                             payload: {
                                 uid: user.uid,
                                 email: user.email || "",
-                                ...userDoc.data()
+                                budgetPlans: data.budgetPlans || [],
+                                ...data
                             }
                         });
                     } else {
-                        await setDoc(doc(db, "users", user.uid), {
+                        const newUser = {
                             email: user.email,
-                            createdAt: new Date().toISOString()
-                        });
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            budgetPlans: [],
+                            memberPlans: []
+                        };
+                        await setDoc(doc(db, "users", user.uid), newUser);
+                        
                         dispatch({
                             type: "SET_USER",
                             payload: {
@@ -104,7 +147,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }, [auth]);
 
     return (
-        <UserContext.Provider value={{ state, dispatch }}>
+        <UserContext.Provider value={{ state, dispatch, updateUser, addBudgetPlan}}>
             {children}
         </UserContext.Provider>
     );
